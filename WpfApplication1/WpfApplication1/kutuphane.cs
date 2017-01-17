@@ -22,20 +22,78 @@ namespace WpfApplication1
             public DateTime gelisTarihi { get; set; }
         }
 
-        string baglantistr = "Server=localhost:60;Port=3306;Database=test;Uid=root;Pwd=;Convert Zero Datetime=True;Allow Zero Datetime=True;";
-        public void Kaydet(ktpBilgi a)
+        public kutuphane(string ipadresi, string portno, string kullaniciadi, string sifre, string veritabaniadi)
+        {
+            baglantistr = "Server=" + ipadresi + ";Port=" + portno + ";Database=" + veritabaniadi + ";Uid=" + kullaniciadi + ";Pwd=" + sifre + ";";
+        }
+        string baglantistr;
+        public string hata = "";
+
+
+        public void Kaydet(string kitapAdi, string yazarAdi, string yayinAdi, string kitapTuru, string baskiSayisi, string stokSayisi)
         {
             MySqlConnection baglanti = new MySqlConnection(baglantistr);
-            baglanti.Open();
+            try
+            {
+                baglanti.Open();
+            }
+            catch (MySqlException e)
+            {
+                hata = e.Message;
+                return;
+            }
 
-            MySqlCommand komut = new MySqlCommand("INSERT INTO kutuphane (kitapAdi, yazarAdi, yayinAdi, kitapTuru, baskiSayisi, stokSayisi) Values (" + a.kitapAdi + ","
-                + a.yazarAdi + "," + a.yayinEvi + "," + a.kitapTuru + "," + a.baskiSayisi + "," + a.stokSayisi + ")", baglanti);
+            MySqlCommand komut = new MySqlCommand ("INSERT INTO kutuphane (kitapAdi, yazarAdi, yayinAdi, kitapTuru, baskiSayisi, stokSayisi) Values ('" + kitapAdi + "','" 
+                +yazarAdi+ "','" +yayinAdi + "','" + kitapTuru + "','" + baskiSayisi + "','" + stokSayisi + "')", baglanti);
 
             komut.ExecuteNonQuery();
             komut.Dispose();
             baglanti.Close();
             baglanti.Dispose();
         }
+        public void VeriSil(int id)
+        {
+            MySqlConnection baglanti;
+            baglanti = new MySqlConnection(baglantistr);
+            try
+            {
+                baglanti.Open();
+            }
+            catch (MySqlException e)
+            {
+                hata = e.Message;
+                return;
+            }
+            MySqlCommand komut = new MySqlCommand("DELETE FROM deneme WHERE id=" + id.ToString(), baglanti);
+            komut.ExecuteNonQuery();
+            baglanti.Close();
+            komut.Dispose();
+        
+        }
+
+        public DataView tumverilerioku(string tabloadi)
+        {
+            MySqlConnection baglanti;
+            baglanti = new MySqlConnection(baglantistr);
+            try
+            {
+                baglanti.Open();
+            }
+            catch (MySqlException e)
+            {
+                hata = e.Message;
+                return new DataView();
+            }
+            MySqlCommand komut = new MySqlCommand("SELECT * FROM  kutuphane" , baglanti);
+            MySqlDataAdapter adabtor = new MySqlDataAdapter(komut);
+            DataTable tablo = new DataTable();
+            adabtor.Fill(tablo);
+            baglanti.Close();
+            return tablo.AsDataView();
+        }
+
+
+
 
     }
 }
